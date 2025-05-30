@@ -16,3 +16,6 @@ Build/
 # Project files (keep these)
 !*.uproject
 !*.uplugin
+
+# Visual Studio Code
+.vscode/
