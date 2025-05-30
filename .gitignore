@@ -19,3 +19,9 @@ Build/
 
 # Visual Studio Code
 .vscode/
+
+# Only keep specific files
+.vscode/*
+!.vscode/settings.json
+!.vscode/extensions.json
+!.vscode/tasks.json
