@@ -1,0 +1,18 @@
+# Unreal Engine generated files
+Binaries/
+DerivedDataCache/
+Intermediate/
+Saved/
+Build/
+
+# IDE/filesystem
+.vs/
+.idea/
+*.sln
+*.suo
+*.opendb
+*.VC.db
+
+# Project files (keep these)
+!*.uproject
+!*.uplugin
