@@ -1,34 +1,63 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
-
 #include "Characters/Player/BaseCharacter.h"
+#include "Camera/CameraComponent.h"
+#include "EnhancedInputComponent.h"
+#include "EnhancedInputSubsystems.h"
+#include "InputActionValue.h"
+#include "GameFramework/PlayerController.h"
 
-// Sets default values
 ABaseCharacter::ABaseCharacter()
 {
- 	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
-	PrimaryActorTick.bCanEverTick = true;
+    PrimaryActorTick.bCanEverTick = true;
 
+    CameraComponent = CreateDefaultSubobject<UCameraComponent>(TEXT("CameraComponent"));
+    CameraComponent->SetupAttachment(GetMesh(), FName("head")); // Assuming you're attaching to head bone
+    CameraComponent->bUsePawnControlRotation = true;
+
+    bUseControllerRotationYaw = true;
 }
 
-// Called when the game starts or when spawned
 void ABaseCharacter::BeginPlay()
 {
-	Super::BeginPlay();
-	
+    Super::BeginPlay();
+
+    if (APlayerController* PC = Cast<APlayerController>(GetController()))
+    {
+        if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PC->GetLocalPlayer()))
+        {
+            if (InputMapping)
+            {
+                Subsystem->AddMappingContext(InputMapping, 0);
+            }
+        }
+    }
 }
 
-// Called every frame
-void ABaseCharacter::Tick(float DeltaTime)
-{
-	Super::Tick(DeltaTime);
-
-}
-
-// Called to bind functionality to input
 void ABaseCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
-	Super::SetupPlayerInputComponent(PlayerInputComponent);
+    Super::SetupPlayerInputComponent(PlayerInputComponent);
 
+    if (UEnhancedInputComponent* EnhancedInput = Cast<UEnhancedInputComponent>(PlayerInputComponent))
+    {
+        EnhancedInput->BindAction(MoveAction, ETriggerEvent::Triggered, this, &ABaseCharacter::Move);
+        EnhancedInput->BindAction(LookAction, ETriggerEvent::Triggered, this, &ABaseCharacter::LookAround);
+    }
 }
 
+void ABaseCharacter::Move(const FInputActionValue& Value)
+{
+    FVector2D MovementVector = Value.Get<FVector2D>();
+
+    if (Controller)
+    {
+        AddMovementInput(GetActorForwardVector(), MovementVector.Y);
+        AddMovementInput(GetActorRightVector(), MovementVector.X);
+    }
+}
+
+void ABaseCharacter::LookAround(const FInputActionValue& Value)
+{
+    FVector2D LookAxis = Value.Get<FVector2D>();
+
+    AddControllerYawInput(LookAxis.X);
+    AddControllerPitchInput(LookAxis.Y);
+}
